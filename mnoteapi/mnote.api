@@ -1,0 +1,24 @@
+syntax = "v1"
+
+info(
+	author: "moyrne"
+	email: "moyrn@qq.com"
+)
+
+type statusResponse {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type loginRequest {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+service mnote-api {
+	@handler Login // 登录
+	post /user/login (loginRequest) returns (statusResponse)
+	
+	@handler Logout // 退出登录
+	post /user/logout
+}
