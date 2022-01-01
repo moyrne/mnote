@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/tal-tech/go-zero/core/stores/builder"
 	"github.com/tal-tech/go-zero/core/stores/cache"
 	"github.com/tal-tech/go-zero/core/stores/sqlc"
 	"github.com/tal-tech/go-zero/core/stores/sqlx"
 	"github.com/tal-tech/go-zero/core/stringx"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -19,12 +21,14 @@ var (
 	noteUserRowsWithPlaceHolder = strings.Join(stringx.Remove(noteUserFieldNames, "`id`", "`create_time`", "`update_time`"), "=?,") + "=?"
 
 	cacheNoteUserIdPrefix = "cache:noteUser:id:"
+
+	ErrPasswordEmpty = errors.New("password can't empty")
 )
 
 type (
 	NoteUserModel interface {
 		Insert(data *NoteUser) (sql.Result, error)
-		FindOneByNamePassword(name, password string) (*NoteUser, error)
+		CheckPassword(name, password string) (*NoteUser, error)
 		FindOne(id int64) (*NoteUser, error)
 		Update(data *NoteUser) error
 		Delete(id int64) error
@@ -52,25 +56,30 @@ func NewNoteUserModel(conn sqlx.SqlConn, c cache.CacheConf) NoteUserModel {
 }
 
 func (m *defaultNoteUserModel) Insert(data *NoteUser) (sql.Result, error) {
-	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?)", m.table, noteUserRowsExpectAutoSet)
-	ret, err := m.ExecNoCache(query, data.Id, data.Name, data.Password, data.Nickname, data.Identity)
+	if data.Password == "" {
+		return nil, errors.WithStack(ErrPasswordEmpty)
+	}
 
-	return ret, err
+	enPass, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	data.Password = string(enPass)
+
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?)", m.table, noteUserRowsExpectAutoSet)
+	return m.ExecNoCache(query, data.Id, data.Name, data.Password, data.Nickname, data.Identity)
 }
 
-func (m *defaultNoteUserModel) FindOneByNamePassword(name, password string) (*NoteUser, error) {
-	// TODO encrypt password
-	enPass := password
-
-	noteUserIdKey := fmt.Sprintf("%s%v%v", cacheNoteUserIdPrefix, name, enPass)
+func (m *defaultNoteUserModel) CheckPassword(name, password string) (*NoteUser, error) {
+	noteUserIdKey := fmt.Sprintf("%s%v", cacheNoteUserIdPrefix, name)
 	var resp NoteUser
 	err := m.QueryRow(&resp, noteUserIdKey, func(conn sqlx.SqlConn, v interface{}) error {
-		query := fmt.Sprintf("select %s from %s where `name` = ? and `password` = ? limit 1", noteUserRows, m.table)
-		return conn.QueryRow(v, query, name, enPass)
+		query := fmt.Sprintf("select %s from %s where `name` = ? limit 1", noteUserRows, m.table)
+		return conn.QueryRow(v, query, name)
 	})
 	switch err {
 	case nil:
-		return &resp, nil
+		return &resp, errors.WithStack(bcrypt.CompareHashAndPassword([]byte(resp.Password), []byte(password)))
 	case sqlc.ErrNotFound:
 		return nil, ErrNotFound
 	default:
