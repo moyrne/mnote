@@ -15,10 +15,26 @@ type loginRequest {
 	Password string `json:"password"`
 }
 
+type loginResponse {
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Nickname string `json:"nickname"`
+}
+
 service mnote-api {
 	@handler Login // 登录
-	post /user/login (loginRequest) returns (statusResponse)
+	post /user/login (loginRequest) returns (loginResponse)
 	
 	@handler Logout // 退出登录
 	post /user/logout
+}
+
+@server(
+	jwt: Auth
+)
+service mnote-api {
+	@handler Notes
+	get /notes returns (statusResponse)
 }
