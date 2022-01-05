@@ -17,4 +17,6 @@ type LoginResponse struct {
 	ID       int64  `json:"id"`
 	Name     string `json:"name"`
 	Nickname string `json:"nickname"`
+	Token    string `json:"token"`
+	Expire   int64  `json:"expire"`
 }

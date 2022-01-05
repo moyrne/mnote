@@ -81,9 +81,9 @@ func (m *defaultNoteUserModel) CheckPassword(name, password string) (*NoteUser, 
 	case nil:
 		return &resp, errors.WithStack(bcrypt.CompareHashAndPassword([]byte(resp.Password), []byte(password)))
 	case sqlc.ErrNotFound:
-		return nil, ErrNotFound
+		return nil, errors.WithStack(ErrNotFound)
 	default:
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 }
 
@@ -109,12 +109,11 @@ func (m *defaultNoteUserModel) Update(data *NoteUser) error {
 	_, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, noteUserRowsWithPlaceHolder)
 		return conn.Exec(query, data.Name, data.Password, data.Nickname, data.Identity, data.Id)
-	}, noteUserIdKey)
+	}, noteUserIdKey, fmt.Sprintf("%s%v", cacheNoteUserIdPrefix, data.Name))
 	return err
 }
 
 func (m *defaultNoteUserModel) Delete(id int64) error {
-
 	noteUserIdKey := fmt.Sprintf("%s%v", cacheNoteUserIdPrefix, id)
 	_, err := m.Exec(func(conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)

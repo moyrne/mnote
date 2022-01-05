@@ -25,6 +25,6 @@ func NewNotesLogic(ctx context.Context, svcCtx *svc.ServiceContext) NotesLogic {
 
 func (l *NotesLogic) Notes() (resp *types.StatusResponse, err error) {
 	// todo: add your logic here and delete this line
-
+	l.ctx.Value("userID")
 	return
 }
