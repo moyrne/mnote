@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/moyrne/mnote/mnoteapi/internal/svc"
 	"github.com/moyrne/mnote/mnoteapi/internal/types"
@@ -24,7 +25,11 @@ func NewNotesLogic(ctx context.Context, svcCtx *svc.ServiceContext) NotesLogic {
 }
 
 func (l *NotesLogic) Notes() (resp *types.StatusResponse, err error) {
-	// todo: add your logic here and delete this line
-	l.ctx.Value("userID")
+	userInfo, err := l.svcCtx.UserFilter(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(userInfo)
 	return
 }
