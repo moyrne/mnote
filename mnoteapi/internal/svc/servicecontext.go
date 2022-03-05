@@ -6,7 +6,7 @@ import (
 	"github.com/moyrne/mnote/mnoteapi/internal/config"
 	"github.com/moyrne/mnote/mnoteapi/model"
 	"github.com/pkg/errors"
-	"github.com/tal-tech/go-zero/core/stores/sqlx"
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 type ServiceContext struct {

@@ -6,7 +6,7 @@ import (
 	"github.com/moyrne/mnote/mnoteapi/internal/logic"
 	"github.com/moyrne/mnote/mnoteapi/internal/svc"
 	"github.com/moyrne/mnote/mnoteapi/internal/types"
-	"github.com/tal-tech/go-zero/rest/httpx"
+	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 func LoginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
