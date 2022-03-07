@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/moyrne/mnote/mnoteapi/internal/svc"
-	"github.com/tal-tech/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type LogoutLogic struct {

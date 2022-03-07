@@ -7,7 +7,7 @@ import (
 	"github.com/moyrne/mnote/mnoteapi/internal/svc"
 	"github.com/moyrne/mnote/mnoteapi/internal/types"
 
-	"github.com/tal-tech/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type NotesLogic struct {
